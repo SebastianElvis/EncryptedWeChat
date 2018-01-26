@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Encrypted WeChat",
-    "description": "Encrypted your WeChat messages",
+    "description": "Encrypte your WeChat messages",
     "version": "1.0",
     "browser_action": {
         "default_icon": "icon.png",
@@ -9,15 +9,17 @@
         "default_title": "Hello Encrypted World!"
     },
     "content_security_policy": "script-src 'self'; object-src 'self'",
-    "permissions": ["activeTab","tabs"],
+    "permissions": ["activeTab", "tabs"],
 
-    "content_scripts":
-    [
-        {
-            "matches": ["https://wx.qq.com/*"],
-            "js": ["js/jquery-1.8.3.min.js", "js/crypto-js.js", "js/utils.js", "js/main.js"],
-            "css": ["css/custom.css"],
-            "run_at": "document_start"
-        }
-    ]
+    "background": {
+        "page": "background.html",
+        "persistent": false
+    },
+
+    "content_scripts": [{
+        "matches": ["https://wx.qq.com/*"],
+        "js": ["js/jquery-1.8.3.min.js", "js/content.js"],
+        "css": ["css/content.css"],
+        "run_at": "document_end"
+    }]
 }
