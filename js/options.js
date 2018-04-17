@@ -1,11 +1,11 @@
-var masterpw = "", syncloadcount = 0, syncsetcount = 0, synccounter = 0;
+var masterpw = "1122", syncloadcount = 0, syncsetcount = 0, synccounter = 0;
 var bcrypt = new bCrypt();
 
 $(document).ready(function() {
 	var randParanoia = 10;
 	sjcl.random = new sjcl.prng(randParanoia);
 	sjcl.random.startCollectors();
-	
+
 	var options = {
 		rules: {
 			activated: {
@@ -15,31 +15,40 @@ $(document).ready(function() {
 		},
 		ui: {
 			showVerdictsInsideProgressBar: true,
-			verdicts: [ chrome.i18n.getMessage("verdict_weak"), chrome.i18n.getMessage("verdict_normal"), chrome.i18n.getMessage("verdict_medium"), 
-						chrome.i18n.getMessage("verdict_strong"), chrome.i18n.getMessage("verdict_very_strong") ]
+			verdicts: [
+                chrome.i18n.getMessage("verdict_weak")
+                , chrome.i18n.getMessage("verdict_normal")
+                , chrome.i18n.getMessage("verdict_medium")
+				, chrome.i18n.getMessage("verdict_strong")
+                , chrome.i18n.getMessage("verdict_very_strong")
+            ]
 		}
     };
-    $('#inputMasterPassword').pwstrength(options);
-	
-	if( loadval("pgpanywhere_encrypted",0)==1 )
-	{
-		$.getScript("/js/master_auth.js", function() {
-			master_auth(function(decpw) {
-				masterpw = decpw;
-				$("#inputMasterPassword").val(decpw);
-				$("#inputMasterPassword2").val(decpw);
-				$("#inputMasterPassword").pwstrength("forceUpdate");
-				loadkeyrings();
-			});
-		});
-	}
-	else loadkeyrings();
-	
+    //$('#inputMasterPassword').pwstrength(options);
+
+	// if( loadval("pgpanywhere_encrypted",0)==1 )
+	// {
+	// 	$.getScript("/js/master_auth.js", function() {
+	// 		master_auth(function(decpw) {
+	// 			masterpw = decpw;
+	// 			$("#inputMasterPassword").val(decpw);
+	// 			$("#inputMasterPassword2").val(decpw);
+	// 			$("#inputMasterPassword").pwstrength("forceUpdate");
+	// 			loadkeyrings();
+	// 		});
+	// 	});
+	// }
+	// else loadkeyrings();
+
+    loadkeyrings();
+
 	$("#addpgpdeckey").keyup(function() {
 		var keyval = $(this).val();
-		if(keyval.indexOf("-----BEGIN PGP PRIVATE KEY BLOCK-----")!=-1) $("#savekeypassword").removeAttr("disabled");
+		if(keyval.indexOf("-----BEGIN PGP PRIVATE KEY BLOCK-----")!=-1)
+            $("#savekeypassword").removeAttr("disabled");
 		else $("#savekeypassword").attr("disabled","disabled");
 	});
+
 	$("#selectDecKey").change(function() {
 		var optval = $(this).val();
 		if(optval=="addnew")
@@ -47,20 +56,20 @@ $(document).ready(function() {
 			$("#removebutton, #savekeypassword").attr("disabled","disabled");
 			$("#savekeypassword, #inputEmail, #addpgpdeckey").val("");
 			$("#addbutton").removeClass("btn-primary btn-info").addClass("btn-primary");
-			
+
 			$("#inputEmail, #addpgpdeckey").keyup();
 		}
 		else
 		{
 			$("#removebutton").removeAttr("disabled");
-			
+
 			var infosplit = optval.split("|");
 			if(infosplit[1] == "0")
 			{
 				var container = openkeyring("private");
-				for(var i=0;i<container.length;i++) 
+				for(var i=0;i<container.length;i++)
 				{
-					if( container[i].email == infosplit[0] ) 
+					if( container[i].email == infosplit[0] )
 					{
 						$("#savekeypassword").val(container[i].password);
 						$("#inputEmail").val(container[i].email);
@@ -69,12 +78,12 @@ $(document).ready(function() {
 				}
 				$("#savekeypassword").removeAttr("disabled");
 			}
-			else 
+			else
 			{
 				var container = openkeyring("public");
-				for(var i=0;i<container.length;i++) 
+				for(var i=0;i<container.length;i++)
 				{
-					if( container[i].email == infosplit[0] ) 
+					if( container[i].email == infosplit[0] )
 					{
 						$("#inputEmail").val(container[i].email);
 						$("#addpgpdeckey").val(container[i].key);
@@ -82,112 +91,91 @@ $(document).ready(function() {
 				}
 				$("#savekeypassword").val("").attr("disabled","disabled");
 			}
-			
+
 			$("#inputEmail, #addpgpdeckey").keyup();
 			$("#addbutton").removeClass("disabled btn-primary btn-info").addClass("btn-info").text(chrome.i18n.getMessage("export"));
 		}
 	});
-	
-	$("#inputMasterPassword").keyup(function() {
-		$("#inputMasterPassword2").val("").show();
-	});
-	
+
+	// $("#inputMasterPassword").keyup(function() {
+	// 	$("#inputMasterPassword2").val("").show();
+	// });
+
 	$("#inputEmail, #addpgpdeckey").keyup(function() {
 		var user = $("#inputEmail").val();
 		var key = $("#addpgpdeckey").val();
 		var iskey = $("#selectDecKey").val();
 		var enteredkey = $("#addpgpdeckey").val();
-		
-		if( iskey == "addnew" && user.length && !enteredkey.length ) $("#generatekey").removeClass("disabled");
-		else $("#generatekey").addClass("disabled");
-		
-		if( user.length && key.length ) $("#addbutton").removeClass("disabled btn-primary btn-info").addClass("btn-primary").text(chrome.i18n.getMessage("save"));
-		else $("#addbutton").addClass("disabled");
+
+		if(iskey) $("#removebutton").removeClass("disabled");
+		else $("#removebutton").addClass("disabled");
+
+		if( user.length && key.length ) {
+            $("#addbutton").removeClass("disabled btn-primary btn-info")
+                            .addClass("btn-primary")
+                            .text(chrome.i18n.getMessage("save"));
+        } else $("#addbutton").addClass("disabled");
 	});
-	$("#generatekey").click(function(e) {
-		e.preventDefault();
-		
-		var user = getAlias();
-		if(!user) return;
-		
-		$("#addpgpdeckey, #inputEmail, #generatekey, #addbutton, #submitbutton, #flushbutton").addClass("disabled").attr("disabled", "disabled");
-		var befText = $(this).html();
-		$(this).html(chrome.i18n.getMessage("generating") + ' <i class="fa fa-cog fa-spin"></i>');
-		
-		createRandomString(function(createdString) {
-			var createOptions = {
-				numBits: 2048,
-				userIds: [{name:user}],
-				passphrase: createdString
-			};
-			
-			openpgp.generateKey(createOptions).then(function(keypair) {
-				var privkey = keypair.privateKeyArmored;
-				var pubkey = keypair.publicKeyArmored;
-				
-				savekey(user, pubkey, "");
-				savekey(user, privkey, createdString);
-				
-				$("#generatekey").html(befText)
-				$("#addpgpdeckey, #inputEmail, #generatekey, #addbutton, #submitbutton, #flushbutton").removeClass("disabled").removeAttr("disabled");
-				$("#selectDecKey").val(user+"|1").change();
-			}).catch(function(error) {
-				alert(error);
-			});
-		}, 30);
-	});	
-	
+
 	$("#removebutton").click(function(e) {
 		e.preventDefault();
-		
+
 		var remindex = $("#selectDecKey").val();
 		var infosplit = remindex.split("|");
-		if(infosplit[1] == "0") var container = openkeyring("private");
-		else var container = openkeyring("public");
-		for(var i=container.length-1;i>=0;i--) if( container[i].email == infosplit[0] ) container.splice(i,1);
+		if(infosplit[1] == "0")
+            var container = openkeyring("private");
+		else
+            var container = openkeyring("public");
+	    for(var i=container.length-1;i>=0;i--) {
+            if( container[i].email == infosplit[0] )
+                container.splice(i,1);
+        }
 		if(infosplit[1] == "0") savekeyring("private",container);
 		else savekeyring("public",container);
-		
+
 		$("option[value='"+remindex+"']","#selectDecKey").remove();
 		$("#savekeypassword, #inputEmail, #addpgpdeckey").val("");
 		$("#selectDecKey").change();
 	});
-	$("#addbutton").click(function(e) {
+
+	$("#submitbutton").click(function(e) {
 		e.preventDefault();
-		
-		if( $(this).hasClass("btn-primary") )
+
+		//if( $(this).hasClass("btn-primary") )
+        if( true )
 		{
-			var pass = $("#savekeypassword").val();
+			var pass = "1234";
 			var email = getAlias();
 			var key = $("#addpgpdeckey").val();
 			if(!email) return;
-			
+
 			savekey(email, key, pass);
-			$("#inputEmail, #addpgpdeckey, #savekeypassword").val("");
+			$("#inputEmail, #addpgpdeckey").val("");
 		}
-		else
-		{
-			var infosplit = $("#selectDecKey").val().split("|");
-			var splitlabel;
-			if(infosplit[1] == "0")
-			{
-				$(".modal-body .well").text($("#savekeypassword").val()).show();
-				$(".modal-body p").html(chrome.i18n.getMessage("export_private_desc"));
-				splitlabel = "private";
-			}
-			else
-			{
-				$(".modal-body .well").text("").hide();
-				$(".modal-body p").html(chrome.i18n.getMessage("export_public_desc"));
-				splitlabel = "public";
-			}
-			$("#downloadKey").attr("download", $("#inputEmail").val()+'.'+splitlabel+'.asc').attr("href", 'data:text/plain;base64,'+btoa($("#addpgpdeckey").val()));
-			
-			if($("#savekeypassword").val().length) $(".modal-body .well").show();
-			else $(".modal-body .well").hide();
-			$(".modal").show();
-		}
+		// else
+		// {
+		// 	var infosplit = $("#selectDecKey").val().split("|");
+		// 	var splitlabel;
+		// 	if(infosplit[1] == "0")
+		// 	{
+		// 		$(".modal-body .well").text($("#savekeypassword").val()).show();
+		// 		$(".modal-body p").html(chrome.i18n.getMessage("export_private_desc"));
+		// 		splitlabel = "private";
+		// 	}
+		// 	else
+		// 	{
+		// 		$(".modal-body .well").text("").hide();
+		// 		$(".modal-body p").html(chrome.i18n.getMessage("export_public_desc"));
+		// 		splitlabel = "public";
+		// 	}
+		// 	$("#downloadKey").attr("download", $("#inputEmail").val()+'.'+splitlabel+'.asc').attr("href", 'data:text/plain;base64,'+btoa($("#addpgpdeckey").val()));
+        //
+		// 	if($("#savekeypassword").val().length) $(".modal-body .well").show();
+		// 	else $(".modal-body .well").hide();
+		// 	$(".modal").show();
+		// }
 	});
+
 	$(".modal-header .close, .modal-footer .btn-default").click(function() {
 		$(".modal").hide();
 		$(".modal-body .well").text("");
@@ -197,78 +185,11 @@ $(document).ready(function() {
 		if(confirm(chrome.i18n.getMessage("delete_confirm")))
 		{
 			chrome.storage.sync.clear();
-			localStorage.clear(); 
+			localStorage.clear();
 			window.location=window.location;
 		}
 	});
-	$("#submitbutton").click(function(e) {
-		e.preventDefault();
-		
-		var encpw = $("#inputMasterPassword").val();
-		if( encpw != $("#inputMasterPassword2").val() ) return alert(chrome.i18n.getMessage("password_no_match"));
-		var encrypted = encpw.length ? 1 : 0;
-		var temp_public = (loadval("pgpanywhere_encrypted",0)==1) ? sjcl.decrypt(masterpw,loadval("pgpanywhere_public_keyring","[]")) : loadval("pgpanywhere_public_keyring","[]");
-		var temp_private = (loadval("pgpanywhere_encrypted",0)==1) ? sjcl.decrypt(masterpw,loadval("pgpanywhere_private_keyring","[]")) : loadval("pgpanywhere_private_keyring","[]");
-		temp_public_save = encpw.length ? sjcl.encrypt(encpw, temp_public) : temp_public;
-		temp_private_save = encpw.length ? sjcl.encrypt(encpw, temp_private) : temp_private;
-		
-		$("#submitbutton").attr("disabled","disabled");
-		masterpw = encpw;
-		localStorage.setItem("pgpanywhere_encrypted", encrypted);
-		localStorage.setItem("pgpanywhere_public_keyring", temp_public_save);
-		localStorage.setItem("pgpanywhere_private_keyring", temp_private_save);
-		chrome.runtime.sendMessage({ msg: "unlock", "auth": masterpw });
-		
-		if(encrypted)
-		{
-			var d = new Date(); 
-			syncsetcount = 0;
-			
-			// Hash-Generation
-			var hashtype = 2; //always bCrypt
-			createhash( encpw, hashtype, function(encrypted_hash) {
-				var settingscontainer = {"encrypted":encrypted, "hash":encrypted_hash};
-				localStorage.setItem("pgpanywhere_encrypted_hash", encrypted_hash );
-				
-				addSyncElement(6);
-				chrome.storage.sync.set({"pgpanywhere_sync_container_settings": JSON.stringify(settingscontainer)}, function() { onsyncset(); });
-				
-				// Public Keys
-				var container = openkeyring("public");
-				addSyncElement(container.length);
-				for(var i=0;i<container.length;i++)
-				{
-					var enc_item = sjcl.encrypt(encpw, JSON.stringify(container[i]));
-					var sync_label = "pgpanywhere_sync_public_"+i;
-					var sync_item = {};
-					sync_item[sync_label] = enc_item;
-					chrome.storage.sync.set(sync_item, function() { onsyncset(); });
-				}
-				chrome.storage.sync.set({"pgpanywhere_sync_public_list": container.length}, function() { onsyncset(); });
-				
-				// Private Keys
-				var container = openkeyring("private");
-				addSyncElement(container.length);
-				for(var i=0;i<container.length;i++)
-				{
-					var enc_item = sjcl.encrypt(encpw, JSON.stringify(container[i]));
-					var sync_label = "pgpanywhere_sync_private_"+i;
-					var sync_item = {};
-					sync_item[sync_label] = enc_item;
-					chrome.storage.sync.set(sync_item, function() { onsyncset(); });
-				}
-				chrome.storage.sync.set({"pgpanywhere_sync_private_list": container.length}, function() { onsyncset(); });
-				
-				// Empty container from older versions
-				chrome.storage.sync.remove("pgpanywhere_sync_container_publickeys", function() { onsyncset(); });
-				chrome.storage.sync.remove("pgpanywhere_sync_container_privatekeys", function() { onsyncset(); });
-				
-				var timestamp = Math.floor(Date.now() / 1000);
-				chrome.storage.sync.set({"pgpanywhere_sync_set": timestamp}, function() { onsyncset(); });
-			});
-		}
-		else window.close();
-	});
+
 });
 
 function savekey(email, key, pass)
@@ -276,7 +197,10 @@ function savekey(email, key, pass)
 	if( key.indexOf('-----BEGIN PGP PRIVATE KEY BLOCK-----') != -1 )
 	{
 		var container = openkeyring("private");
-		for(var i=container.length-1;i>=0;i--) if( container[i].email == email ) container.splice(i,1);
+		for(var i=container.length-1;i>=0;i--) {
+            if( container[i].email == email )
+                container.splice(i,1);
+        }
 		var addobj = {"email":email, "key":key, "password": pass};
 		container.push(addobj);
 		savekeyring("private",container);
@@ -284,15 +208,20 @@ function savekey(email, key, pass)
 	else if( key.indexOf('-----BEGIN PGP PUBLIC KEY BLOCK-----') != -1 )
 	{
 		var container = openkeyring("public");
-		for(var i=container.length-1;i>=0;i--) if( container[i].email == email ) container.splice(i,1);
+		for(var i=container.length-1;i>=0;i--) {
+            if( container[i].email == email )
+                container.splice(i,1);
+        }
 		var addobj = {"email":email, "key":key};
 		container.push(addobj);
 		savekeyring("public",container);
 	}
 	else alert(chrome.i18n.getMessage("invalid_key"));
-	
+
 	$("#selectDecKey").html('');
-	$("#selectDecKey").append('<option value="addnew">'+chrome.i18n.getMessage("add_key")+'</option>');
+	$("#selectDecKey").append(
+        '<option value="addnew">'+chrome.i18n.getMessage("add_key")+'</option>'
+    );
 	loadkeyrings();
 	$("#selectDecKey").change();
 }
@@ -314,16 +243,26 @@ function getAlias()
 function loadkeyrings()
 {
 	var container = openkeyring("private");
+    console.log(container);
 	if(container.length)
 	{
-		$("#selectDecKey").append('<optgroup label="'+chrome.i18n.getMessage("private_key_label")+'" id="privateKeyGroup"></div>');
-		for(var i=0;i<container.length;i++) $("#privateKeyGroup").append('<option value="'+container[i].email+'|0">'+container[i].email+'</option>');
+		$("#selectDecKey").append(
+            '<optgroup label="'+chrome.i18n.getMessage("private_key_label")+'" id="privateKeyGroup"></div>'
+        );
+		for(var i=0;i<container.length;i++){
+            $("#privateKeyGroup").append(
+                '<option value="'+container[i].email+'|0">'+container[i].email+'</option>'
+            );
+        }
 	}
-	
+
 	var container = openkeyring("public");
+    console.log(container);
 	if(container.length)
 	{
-		$("#selectDecKey").append('<optgroup label="'+chrome.i18n.getMessage("public_key_label")+'" id="publicKeyGroup"></div>');
+		$("#selectDecKey").append(
+            '<optgroup label="'+chrome.i18n.getMessage("public_key_label")+'" id="publicKeyGroup"></div>'
+        );
 		for(var i=0;i<container.length;i++) $("#publicKeyGroup").append('<option value="'+container[i].email+'|1">'+container[i].email+'</option>');
 	}
 }
@@ -337,7 +276,7 @@ function openkeyring(type)
 	return container;
 }
 
-function savekeyring(type,array)
+function savekeyring(type, array)
 {
 	var container = JSON.stringify(array);
 	if(loadval("pgpanywhere_encrypted",0)==1) container = sjcl.encrypt(masterpw,container);
@@ -359,7 +298,7 @@ function addSyncElement(add)
 function onsyncset()
 {
 	syncsetcount++;
-	if(syncsetcount>=synccounter) window.close();
+	//if(syncsetcount>=synccounter) window.close();
 }
 
 function createhash(str, algo, func)
@@ -368,8 +307,9 @@ function createhash(str, algo, func)
 	if(algo == 1) return func(getshahash(str)); //SHA512
 	if(algo == 2) //bCrypt
 	{
-		if(!bcrypt.ready()) return setTimeout(function() { createhash(str, algo, func); }, 500);
-		
+		if(!bcrypt.ready())
+            return setTimeout(function() { createhash(str, algo, func); }, 500);
+
 		var salt;
 		try{
 			salt = bcrypt.gensalt(10);

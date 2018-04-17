@@ -3,8 +3,13 @@ var decpw = false, syncloadcount = 0, synccounter = 0;
 init();
 init_sync(0);
 
+var chosen_pubkey;
+var chosen_prikey;
+
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
+        //console.log('request detected!');
+        //console.log(request);
         if(request.msg == "masterauth_request")
 		{
 			chrome.runtime.sendMessage({ msg: "masterauth_answer", "auth": decpw, process: request.process });
@@ -17,6 +22,25 @@ chrome.runtime.onMessage.addListener(
 			decpw = request.auth;
 			sendResponse(true);
 		}
+        else if (request.hasOwnProperty('text')) {
+            var text = request.text;
+            var goKey = chosen_pubkey;
+            var publicKey = openpgp.key.readArmored(goKey).keys; //[0]
+            openpgp.encrypt({data:text,publicKeys:publicKey}).then(function(pgpMessage) {
+                var data = pgpMessage.data;
+                data = btoa(data); // base64 encoding for transfer
+                console.log(data);
+                var enctext = { encrypted_text: data};
+                // chrome.runtime.sendMessage(enctext);
+                console.log(enctext);
+                sendResponse(enctext);
+            });
+        } else if (request.hasOwnProperty('pubkey')) {
+            chosen_pubkey = request.pubkey;
+        } else if (request.hasOwnProperty('prikey')) {
+            chosen_prikey = request.prikey;
+        }
+        return true;
     }
 );
 
@@ -26,12 +50,12 @@ chrome.runtime.onInstalled.addListener(function(details){
 
 function init()
 {
-	if(loadval("pgpanywhere_encrypted",0)==1) 
+	if(loadval("pgpanywhere_encrypted",0)==1)
 	{
 		chrome.browserAction.setPopup({popup:"html/unlock.html"});
 		chrome.browserAction.setIcon({path:"img/favicon_lock.png"});
 	}
-	else 
+	else
 	{
 		chrome.browserAction.setPopup({popup:"html/popup.html"});
 		chrome.browserAction.setIcon({path:"img/favicon_19.png"});
@@ -41,7 +65,7 @@ function init()
 function init_sync(tutorial)
 {
 	chrome.storage.sync.get("pgpanywhere_sync_set", function (sync_container) {
-		if(jQuery.isEmptyObject(sync_container)) 
+		if(jQuery.isEmptyObject(sync_container))
 		{
 			if(tutorial) window.open("html/tutorial.html");
 			return;
@@ -49,7 +73,7 @@ function init_sync(tutorial)
 
 		syncloadcount = 0;
 		synccounter = 0;
-		
+
 		addSyncElement(3);
 		chrome.storage.sync.get("pgpanywhere_sync_container_settings", function (sync_container) {
 			var decdata = jQuery.parseJSON(sync_container.pgpanywhere_sync_container_settings);
@@ -58,17 +82,17 @@ function init_sync(tutorial)
 			localStorage.setItem("pgpanywhere_encrypted_hash",  decdata.hash );
 			onsyncload();
 		});
-		
+
 		// Public Keys
 		chrome.storage.sync.get("pgpanywhere_sync_container_publickeys", function (sync_container) {
 			onsyncload();
-			
+
 			if(jQuery.isEmptyObject(sync_container))
 			{
 				addSyncElement(1);
 				chrome.storage.sync.get("pgpanywhere_sync_public_list", function (sync_container) {
 					onsyncload();
-					
+
 					if(!jQuery.isEmptyObject(sync_container))
 					{
 						var keylist = parseInt(sync_container.pgpanywhere_sync_public_list);
@@ -79,7 +103,7 @@ function init_sync(tutorial)
 							var sync_label = "pgpanywhere_sync_public_"+i;
 							chrome.storage.sync.get(sync_label, function (sync_container) {
 								var queue = jQuery.parseJSON(loadval("pgpanywhere_sync_public_queue","[]"));
-								if(!jQuery.isEmptyObject(sync_container)) 
+								if(!jQuery.isEmptyObject(sync_container))
 								{
 									var pushme = sync_container[Object.keys(sync_container)[0]];
 									if(pushme.length) queue.push(pushme);
@@ -90,22 +114,22 @@ function init_sync(tutorial)
 					}
 				});
 			}
-			else 
+			else
 			{
 				localStorage.setItem("pgpanywhere_public_keyring", sync_container.pgpanywhere_sync_container_publickeys );
 			}
 		});
-		
+
 		// Private Keys
 		chrome.storage.sync.get("pgpanywhere_sync_container_privatekeys", function (sync_container) {
 			onsyncload();
-			
+
 			if(jQuery.isEmptyObject(sync_container))
 			{
 				addSyncElement(1);
 				chrome.storage.sync.get("pgpanywhere_sync_private_list", function (sync_container) {
 					onsyncload();
-					
+
 					if(!jQuery.isEmptyObject(sync_container))
 					{
 						var keylist = parseInt(sync_container.pgpanywhere_sync_private_list);
@@ -116,7 +140,7 @@ function init_sync(tutorial)
 							var sync_label = "pgpanywhere_sync_private_"+i;
 							chrome.storage.sync.get(sync_label, function (sync_container) {
 								var queue = jQuery.parseJSON(loadval("pgpanywhere_sync_private_queue","[]"));
-								if(!jQuery.isEmptyObject(sync_container)) 
+								if(!jQuery.isEmptyObject(sync_container))
 								{
 									var pushme = sync_container[Object.keys(sync_container)[0]];
 									queue.push(pushme);
@@ -127,7 +151,7 @@ function init_sync(tutorial)
 					}
 				});
 			}
-			else 
+			else
 			{
 				localStorage.setItem("pgpanywhere_private_keyring", sync_container.pgpanywhere_sync_container_publickeys );
 			}
@@ -152,7 +176,7 @@ function addSyncElement(add)
 function onsyncload()
 {
 	syncloadcount++;
-	if(syncloadcount>=synccounter) 
+	if(syncloadcount>=synccounter)
 	{
 		console.log("finished sync, reloading");
 		init();

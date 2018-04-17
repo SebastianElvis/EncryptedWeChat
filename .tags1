@@ -1,0 +1,34 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+masterpw	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^var masterpw = "1122", syncloadcount = 0, syncsetcount = 0, synccounter = 0;$/;"	variable	line:1
+savekey	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function savekey(email, key, pass)$/;"	function	line:195
+var.addobj.email	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^		var addobj = {"email":email, "key":key, "password": pass};$/;"	property	line:204
+var.addobj.key	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^		var addobj = {"email":email, "key":key, "password": pass};$/;"	property	line:204
+var.addobj.password	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^		var addobj = {"email":email, "key":key, "password": pass};$/;"	property	line:204
+var.addobj.email	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^		var addobj = {"email":email, "key":key};$/;"	property	line:215
+var.addobj.key	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^		var addobj = {"email":email, "key":key};$/;"	property	line:215
+savekey	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function savekey(email, key, pass)$/;"	function	line:195
+getAlias	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function getAlias()$/;"	function	line:229
+getAlias	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function getAlias()$/;"	function	line:229
+loadkeyrings	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function loadkeyrings()$/;"	function	line:243
+loadkeyrings	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function loadkeyrings()$/;"	function	line:243
+openkeyring	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function openkeyring(type)$/;"	function	line:270
+openkeyring	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function openkeyring(type)$/;"	function	line:270
+savekeyring	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function savekeyring(type, array)$/;"	function	line:279
+savekeyring	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function savekeyring(type, array)$/;"	function	line:279
+loadval	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function loadval(key,def)$/;"	function	line:286
+loadval	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function loadval(key,def)$/;"	function	line:286
+addSyncElement	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function addSyncElement(add)$/;"	function	line:293
+addSyncElement	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function addSyncElement(add)$/;"	function	line:293
+onsyncset	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function onsyncset()$/;"	function	line:298
+onsyncset	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function onsyncset()$/;"	function	line:298
+createhash	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function createhash(str, algo, func)$/;"	function	line:304
+createhash	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function createhash(str, algo, func)$/;"	function	line:304
+getshahash	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function getshahash(str)$/;"	function	line:325
+getshahash	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function getshahash(str)$/;"	function	line:325
+createRandomString	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function createRandomString (callback, length) {$/;"	function	line:332
+createRandomString	/home/elvis/ElvisProjs/EncryptedWechat/js/options.js	/^function createRandomString (callback, length) {$/;"	function	line:332
